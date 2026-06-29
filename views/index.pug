@@ -1,0 +1,133 @@
+
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Regsitro de caños
+    link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css")
+    link(rel="stylesheet", href="/style.css")
+    link(rel="manifest", href="/manifest.json")
+    meta(name="theme-color", content="#1C1C1C")
+  body
+    #app.app
+      header(role="banner")
+        h1 Registro de caños
+        #mes-label.mes(aria-live="polite")
+      
+      #scroll-area
+        //- Carga (Main page)
+        #page-carga.page.active(role="main")
+          //- Content will be loaded by app.js
+          
+        //- Historial
+        #page-historial.page(role="main")
+          .section-header
+            h2 Historial del mes
+            button.btn.btn-sm.btn-danger(onclick="confirmarResetMes()", aria-label="Limpiar mes")
+              i.ti.ti-trash(aria-hidden="true")
+              |  Limpiar mes
+          .mes-nav(role="group", aria-label="Navegar mes")
+            button.btn.btn-sm(onclick="cambiarMes(-1)", aria-label="Mes anterior")
+              i.ti.ti-chevron-left
+            span#historial-mes-label.mes-nav-label
+            button.btn.btn-sm(onclick="cambiarMes(1)", aria-label="Mes siguiente")
+              i.ti.ti-chevron-right
+          #lista-historial
+
+        //- Resumen
+        #page-resumen.page(role="main")
+          .section-header
+            h2 Registro mensual
+          .mes-nav(role="group", aria-label="Navegar mes")
+            button.btn.btn-sm(onclick="cambiarMes(-1)", aria-label="Mes anterior")
+              i.ti.ti-chevron-left
+            span#resumen-mes-label.mes-nav-label
+            button.btn.btn-sm(onclick="cambiarMes(1)", aria-label="Mes siguiente")
+              i.ti.ti-chevron-right
+          .metrics#metrics-total
+          .card
+            .card-title Peso por material (kg)
+            #barras-material
+          .card(style="padding:6px 14px")
+            .card-title(style="padding-top:8px") Detalle por modelo
+            #tabla-detalle
+
+        //- Modelos
+        #page-modelos.page(role="main")
+          .section-header
+            h2 Modelos de caños
+            button.btn.btn-primary.btn-sm(onclick="abrirModalModelo()")
+              i.ti.ti-plus(aria-hidden="true")
+              |  Nuevo
+          .chip-group(style="margin-bottom:14px" role="group", aria-label="Filtrar por material")#chip-mat-filtro
+            button.chip.active(onclick="filtrarMat('todos',this)") Todos
+            button.chip(onclick="filtrarMat('3052K',this)") 3052K
+            button.chip(onclick="filtrarMat('3053F',this)") 3053F
+            button.chip(onclick="filtrarMat('3053E',this)") 3053E
+          .card#lista-modelos(style="padding:6px 14px;min-height:60px")
+
+      nav(role="navigation", aria-label="Navegación principal")
+        button.active(onclick="showPage('carga')", data-page="carga")
+          i.ti.ti-pencil(aria-hidden="true")
+          | Carga
+        button(onclick="showPage('historial')", data-page="historial")
+          i.ti.ti-calendar(aria-hidden="true")
+          | Historial
+        button(onclick="showPage('resumen')", data-page="resumen")
+          i.ti.ti-chart-bar(aria-hidden="true")
+          | Resumen
+        button(onclick="showPage('modelos')", data-page="modelos")
+          i.ti.ti-settings(aria-hidden="true")
+          | Modelos
+
+    //- MODAL: NUEVO / EDITAR MODELO
+    #modal-modelo.modal-bg(role="dialog", aria-modal="true", aria-labelledby="modal-titulo")
+      .modal
+        .modal-handle(aria-hidden="true")
+        h3#modal-titulo Nuevo modelo
+        label(for="m-codigo") Código de modelo
+        input#m-codigo(type="text", placeholder="Ej: 23H01908", style="text-transform:uppercase")
+        label(for="m-peso") Peso unitario (kg)
+        input#m-peso(type="number", placeholder="Ej: 0.042", step="0.001", min="0.001", inputmode="decimal")
+        label Material
+        .chip-group#m-mat-chips(role="group", aria-label="Material")
+          button.chip.active(data-mat="3052K", onclick="selMat(this)") 3052K
+          button.chip(data-mat="3053F", onclick="selMat(this)") 3053F
+          button.chip(data-mat="3053E", onclick="selMat(this)") 3053E
+        .modal-footer
+          button.btn(onclick="cerrarModal()") Cancelar
+          button.btn.btn-primary(onclick="guardarModelo()") Guardar
+
+    //- MODAL: CONFIRMAR RESET MES
+    #modal-reset.modal-bg(role="dialog", aria-modal="true", aria-label="Confirmar limpieza del mes")
+      .modal
+        .modal-handle(aria-hidden="true")
+        h3 ¿Limpiar todo el mes?
+        p(style="font-size:14px;color:var(--text-2);margin-top:8px;line-height:1.6")
+          | Esta acción borra todos los registros del mes actual en la base de datos. No se puede deshacer.
+        .modal-footer
+          button.btn(onclick="cerrarModal()") Cancelar
+          button.btn.btn-danger(onclick="resetMes()") Sí, borrar todo
+
+
+    //- MODAL: CONFIRMACIÓN GENÉRICA
+    #modal-confirm.modal-bg(role="dialog", aria-modal="true", aria-labelledby="confirm-titulo")
+      .modal
+        .modal-handle(aria-hidden="true")
+        h3#confirm-titulo ¿Estás seguro?
+        p#confirm-mensaje(style="font-size:14px;color:var(--text-2);margin-top:8px;line-height:1.6")
+        .modal-footer
+          button.btn(onclick="cerrarModal()") Cancelar
+          button.btn.btn-danger#confirm-ok-btn Confirmar
+
+    //- TOAST
+    #toast.toast(role="status", aria-live="polite")
+
+    script.
+      document.getElementById('mes-label').textContent = new Intl.DateTimeFormat('es-AR', {
+        timeZone: 'America/Argentina/Buenos_Aires',
+        month: 'long',
+        year: 'numeric'
+      }).format(new Date());
+    script(type="module", src="app.js")

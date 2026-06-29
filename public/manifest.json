@@ -1,0 +1,8 @@
+{
+  "short_name": "Caizen",
+  "name": "Caizen Mensual",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#1C1C1C",
+  "background_color": "#1C1C1C"
+}

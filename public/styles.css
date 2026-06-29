@@ -1,0 +1,71 @@
+/* General */
+body {
+  background-color: #f5f3f1;
+  padding-top: 60px; /* Header height */
+  padding-bottom: 70px; /* Nav height */
+}
+
+.logo-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: #d9534f;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+/* Header */
+.app-header {
+  background-color: #fff;
+  border-bottom: 1px solid #e0e0e0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1030;
+}
+
+/* Main Content */
+main.container {
+  padding-top: 1rem;
+}
+
+.card {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Bottom Nav */
+.nav-pills {
+  border-top: 1px solid #e0e0e0;
+}
+
+.nav-pills .nav-link {
+  color: #6c757d;
+  text-align: center;
+}
+
+.nav-pills .nav-link.active {
+  color: #d9534f;
+  background-color: transparent;
+  border-top: 2px solid #d9534f;
+  border-radius: 0;
+}
+
+.nav-pills .nav-link i {
+  display: block;
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: #d9534f;
+  border-color: #d9534f;
+}
+
+.btn-primary:hover {
+  background-color: #c9302c;
+  border-color: #c9302c;
+}

@@ -1,0 +1,22 @@
+{
+  "name": "node-express-web",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.108.1",
+    "dotenv": "^17.4.2",
+    "express": "^4.21.2",
+    "pug": "^3.0.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
