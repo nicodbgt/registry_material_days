@@ -10,6 +10,7 @@ import {
   getResumenMes,
   guardarDia,
   limpiarMes,
+  previsualizarLineas,
   removeDia,
   renderIndex,
   updateModelo,
@@ -28,6 +29,7 @@ router.get('/api/historial/:mes', getHistorialMes);
 router.get('/api/dia/:id', getDia);
 router.get('/api/historial/dia/:id', getLineasDia);
 router.get('/api/lineas-fecha/:fecha', getLineasFecha);
+router.post('/api/previsualizar-lineas', previsualizarLineas);
 router.delete('/api/historial/dia/:id', removeDia);
 router.post('/api/historial/limpiar/:mes', limpiarMes);
 

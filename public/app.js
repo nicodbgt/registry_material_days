@@ -80,8 +80,8 @@ window.load = {
 
   async resumen() {
     actualizarMesLabels();
-    const lineas = await DB.getLineasMes(state.currentMes);
-    renderResumen(lineas);
+    const resumen = await DB.getResumenMes(state.currentMes);
+    renderResumen(resumen);
   },
   
   async modelos() {
@@ -149,19 +149,22 @@ function renderCarga() {
                         <tr>
                             <th>Modelo</th>
                             <th>Cantidad</th>
+                          <th>Unitario (kg)</th>
                             <th>Peso (kg)</th>
                             <th>Acción</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${state.lineas.map((linea, idx) => {
-                            const peso = typeof linea.peso_total === 'number'
-                                ? linea.peso_total
-                                : (linea.peso_unit || 0) * (linea.cantidad || 0);
+                            const peso = Number(linea.peso_total) || 0;
                             return `
                             <tr>
-                                <td>${linea.codigo}</td>
+                              <td class="carga-modelo">
+                                <strong>${linea.codigo}</strong>
+                                <small>${linea.material}</small>
+                              </td>
                                 <td>${linea.cantidad}</td>
+                              <td>${Number(linea.peso_unit).toFixed(4)}</td>
                                 <td>${peso.toFixed(2)}</td>
                                 <td>
                                     <button type="button" class="btn btn-sm btn-danger" onclick="eliminarLinea(${idx})">
@@ -198,15 +201,24 @@ function renderHistorial(dias) {
   }
   container.innerHTML = dias.map(dia => `
     <div class="card-historial">
-      <span>${formatDateForDisplay(dia.fecha, { weekday:'long', day:'numeric' })}</span>
-      <button class="btn btn-sm" onclick="verDetalleDia('${dia.id}')">Ver</button>
-      <button class="btn btn-sm btn-danger" onclick="eliminarDia('${dia.id}')"><i class="ti ti-trash"></i></button>
+      <div class="historial-info">
+        <strong>${formatDateForDisplay(dia.fecha, { weekday:'long', day:'numeric' })}</strong>
+        <div class="historial-pesos">
+          ${Object.entries(dia.porMaterial).map(([material, peso]) => `
+            <span><b>${material}</b> ${Number(peso).toFixed(2)} kg</span>
+          `).join('')}
+          <span class="historial-total"><b>Total</b> ${Number(dia.total).toFixed(2)} kg</span>
+        </div>
+      </div>
+      <div class="historial-actions">
+        <button class="btn btn-sm" onclick="verDetalleDia('${dia.id}')">Ver</button>
+        <button class="btn btn-sm btn-danger" onclick="eliminarDia('${dia.id}')"><i class="ti ti-trash"></i></button>
+      </div>
     </div>
   `).join('');
 }
 
-function renderResumen(lineas) {
-  const { porMaterial, porModelo, total } = DB.calcularResumen(lineas);
+function renderResumen({ porMaterial, porModelo, porcentajeMaterial, total }) {
   
   // Metrics
   $('#metrics-total').innerHTML = `
@@ -217,11 +229,10 @@ function renderResumen(lineas) {
   `;
   
   // Bar chart
-  const maxVal = Math.max(...Object.values(porMaterial));
   $('#barras-material').innerHTML = Object.entries(porMaterial).map(([mat, val]) => `
     <div class="barra">
       <div class="barra-label">${mat}</div>
-      <div class="barra-fill" style="width:${(val/maxVal)*100}%"></div>
+      <div class="barra-fill" style="width:${porcentajeMaterial[mat]}%"></div>
       <div class="barra-value">${val.toFixed(2)} kg</div>
     </div>
   `).join('');
@@ -287,7 +298,7 @@ window.handleModeloSelect = (event) => {
     $('#cantidad-input').focus();
 };
 
-window.agregarLinea = () => {
+window.agregarLinea = async () => {
     const select = $('#modelo-select');
     const cantidadInput = $('#cantidad-input');
     
@@ -302,27 +313,19 @@ window.agregarLinea = () => {
         return;
     }
     
-    const option = select.selectedOptions[0];
     const modeloId = select.value;
-    const codigo = option.dataset.codigo;
-    const material = option.dataset.material;
-    const peso_unit = parseFloat(option.dataset.peso);
-    console.log("AGREGANDO LÍNEA:", { modeloId, codigo, material, peso_unit, cantidad });
-    // Check if model already exists in lineas
-    const existingIndex = state.lineas.findIndex(l => l.modelo_id === modeloId);
-    
-    if (existingIndex >= 0) {
-        // Update quantity
-        state.lineas[existingIndex].cantidad += cantidad;
-    } else {
-        // Add new line
-        state.lineas.push({
-            modelo_id: modeloId,
-            codigo,
-            material,
-            peso_unit,
-            cantidad,
-        });
+    const lineas = state.lineas.map(linea => ({ ...linea }));
+    const existing = lineas.find(linea => linea.modelo_id === modeloId);
+    if (existing) existing.cantidad += cantidad;
+    else lineas.push({ modelo_id: modeloId, cantidad });
+
+    try {
+      state.lineas = await DB.previsualizarLineas(
+        lineas.map(({ modelo_id, cantidad }) => ({ modelo_id, cantidad }))
+      );
+    } catch (err) {
+      showToast('Error al calcular: ' + err.message, 'error');
+      return;
     }
     
     // Clear form and re-render

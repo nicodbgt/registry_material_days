@@ -14,7 +14,7 @@ async function api(path, options = {}) {
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ message: res.statusText }));
-    throw new Error(err.message || `Error ${res.status}`);
+    throw new Error(err.message || err.error || `Error ${res.status}`);
   }
 
   if (res.status === 204) return null;
@@ -33,11 +33,15 @@ export const DB = {
   getDia: (diaId) => api(`dia/${diaId}`),
   getLineasDia: (dia_id) => api(`historial/dia/${dia_id}`),
   getLineasFecha: (fecha) => api(`lineas-fecha/${fecha}`),
+  previsualizarLineas: (items) => api('previsualizar-lineas', {
+    method: 'POST',
+    body: JSON.stringify({ items }),
+  }),
   eliminarDia: (dia_id) => api(`historial/dia/${dia_id}`, { method: 'DELETE' }),
   limpiarMes: (mes) => api(`historial/limpiar/${mes}`, { method: 'POST' }),
 
   // --- Resumen ---
-  getLineasMes: (mes) => api(`resumen/${mes}`),
+  getResumenMes: (mes) => api(`resumen/${mes}`),
   
   // --- Guardar Día ---
   guardarDia: (fecha, items) => api('guardar-dia', {
@@ -45,29 +49,4 @@ export const DB = {
       body: JSON.stringify({ fecha, items }),
   }),
   
-  // --- Cálculo Resumen (se mantiene en frontend) ---
-  calcularResumen(lineas) {
-    const porMaterial = { '3052K': 0, '3053F': 0, '3053E': 0 };
-    const porModelo = {};
-
-    for (const l of lineas) {
-      const peso = l.peso_total != null
-        ? parseFloat(l.peso_total)
-        : (parseFloat(l.peso_unit) || 0) * (parseFloat(l.cantidad) || 0);
-      const pt = Number.isFinite(peso) ? peso : 0;
-
-      if (porMaterial[l.material] !== undefined) {
-        porMaterial[l.material] += pt;
-      }
-
-      if (!porModelo[l.codigo]) {
-        porModelo[l.codigo] = { material: l.material, cantidad: 0, peso: 0 };
-      }
-      porModelo[l.codigo].cantidad += Number(l.cantidad) || 0;
-      porModelo[l.codigo].peso += pt;
-    }
-
-    const total = Object.values(porMaterial).reduce((s, v) => s + v, 0);
-    return { porMaterial, porModelo, total };
-  },
 };

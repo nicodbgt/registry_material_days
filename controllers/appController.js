@@ -72,6 +72,23 @@ export const getLineasFecha = async (req, res) => {
   }
 };
 
+export const previsualizarLineas = async (req, res) => {
+  const { items } = req.body;
+  if (!Array.isArray(items) || !items.length) {
+    return res.status(400).json({ error: 'Se requiere al menos una línea para calcular.' });
+  }
+
+  try {
+    const lineas = await db.previsualizarLineas(items);
+    res.json(lineas);
+  } catch (error) {
+    const esDatoInvalido = error.message.includes('cantidad')
+      || error.message.includes('líneas repetidas')
+      || error.message.includes('modelos ya no existen');
+    res.status(esDatoInvalido ? 400 : 500).json({ error: error.message });
+  }
+};
+
 export const removeDia = async (req, res) => {
   try {
     await db.eliminarDia(req.params.id);
@@ -92,8 +109,8 @@ export const limpiarMes = async (req, res) => {
 
 export const getResumenMes = async (req, res) => {
   try {
-    const lineas = await db.getLineasMes(req.params.mes);
-    res.json(lineas);
+    const resumen = await db.getResumenMes(req.params.mes);
+    res.json(resumen);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -101,7 +118,7 @@ export const getResumenMes = async (req, res) => {
 
 export const guardarDia = async (req, res) => {
   const { fecha, items } = req.body;
-  if (!fecha || !items || !items.length) {
+  if (!fecha || !Array.isArray(items) || !items.length) {
     return res.status(400).json({ error: 'Missing required data.' });
   }
 
@@ -109,8 +126,10 @@ export const guardarDia = async (req, res) => {
     const dia = await db.guardarDia(fecha, items);
     res.status(201).json(dia);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to save production day.' });
+    const esDatoInvalido = error.message.includes('cantidad')
+      || error.message.includes('líneas repetidas')
+      || error.message.includes('modelos ya no existen');
+    res.status(esDatoInvalido ? 400 : 500).json({ error: error.message });
   }
 };
 
