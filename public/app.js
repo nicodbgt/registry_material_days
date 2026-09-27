@@ -407,6 +407,41 @@ function showConfirm(mensaje, onOk) {
   modal.style.display = 'flex';
 }
 
+window.abrirModalReporte = () => {
+  actualizarMesLabels();
+  $('#reporte-mes-text').textContent = `Se enviará el reporte de ${formatMesLabel(state.currentMes)}.`;
+  $('#modal-reporte').style.display = 'flex';
+};
+
+window.enviarReporte = async () => {
+  const email = $('#reporte-email').value.trim();
+  const format = $('#reporte-formato').value;
+  if (!email) return showToast('Ingresá el email del jefe', 'error');
+
+  const button = $('#modal-reporte .btn-primary');
+  button.disabled = true;
+  button.textContent = 'Enviando...';
+  try {
+    const registros = await DB.getRegistrosReporteMes(state.currentMes);
+    if (!registros.length) {
+      throw new Error('El mes seleccionado no tiene registros para enviar.');
+    }
+    await DB.enviarReporteMensual({
+      mes_reporte: formatMesLabel(state.currentMes),
+      formato_salida: format,
+      email_jefe: email,
+      registros_diarios: registros,
+    });
+    cerrarModal();
+    showToast(`Reporte de ${formatMesLabel(state.currentMes)} enviado`);
+  } catch (error) {
+    showToast('Error al enviar: ' + error.message, 'error');
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Enviar';
+  }
+};
+
 
 
 // --- Modelos Page ---

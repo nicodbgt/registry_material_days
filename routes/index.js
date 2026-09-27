@@ -8,6 +8,8 @@ import {
   getLineasDia,
   getModelos,
   getResumenMes,
+  getRegistrosReporteMes,
+  generarReporte,
   guardarDia,
   limpiarMes,
   previsualizarLineas,
@@ -35,9 +37,11 @@ router.post('/api/historial/limpiar/:mes', limpiarMes);
 
 // --- Resumen ---
 router.get('/api/resumen/:mes', getResumenMes);
+router.get('/api/reportes/registros/:mes', getRegistrosReporteMes);
 
 // POST /api/guardar-dia
 router.post('/api/guardar-dia', guardarDia);
+router.post('/api/reportes/mensual', generarReporte);
 
 // Frontend rendering
 router.get('/', renderIndex);

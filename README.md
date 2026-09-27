@@ -132,3 +132,26 @@ Instalá la extensión **Live Server** y hacé clic en "Go Live".
   perderlos si se recarga la página accidentalmente.
 - La columna `peso_total` en `lineas_produccion` es una **generated column**
   (calculada por la DB), nunca se escribe desde la app.
+
+## Reporte mensual
+
+La API `POST /api/reportes/mensual` recibe el JSON definido en
+`KaizenMonthlyReporter.md`. Genera el CSV o el Excel en `reports/` y lo envía
+como adjunto con el asunto `Reporte Kaizen Actualizado - [mes_reporte]`.
+
+El Excel es un reporte nuevo con los materiales en `A17:A19` (`3053E`,
+`3053F`, `3052K`) y los días 1 a 31 en `B:AF`; no copia la plantilla Kaizen.
+
+Configurá estas variables en `.env` antes de usarla:
+
+```env
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=usuario
+SMTP_PASS=contraseña
+REPORT_FROM=reportes@example.com
+```
+
+La ruta devuelve `status: "error"` y no simula el envío si falta alguna
+variable SMTP o falla la entrega.

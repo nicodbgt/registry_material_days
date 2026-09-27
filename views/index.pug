@@ -41,6 +41,9 @@ html(lang="es")
         #page-resumen.page(role="main")
           .section-header
             h2 Registro mensual
+            button.btn.btn-primary.btn-sm(type="button", onclick="abrirModalReporte()")
+              i.ti.ti-mail-forward(aria-hidden="true")
+              | Enviar reporte
           .mes-nav(role="group", aria-label="Navegar mes")
             button.btn.btn-sm(onclick="cambiarMes(-1)", aria-label="Mes anterior")
               i.ti.ti-chevron-left
@@ -111,6 +114,22 @@ html(lang="es")
         .modal-footer
           button.btn(onclick="cerrarModal()") Cancelar
           button.btn.btn-danger(onclick="resetMes()") Sí, borrar todo
+
+    //- MODAL: ENVIAR REPORTE MENSUAL
+    #modal-reporte.modal-bg(role="dialog", aria-modal="true", aria-labelledby="reporte-titulo")
+      .modal
+        .modal-handle(aria-hidden="true")
+        h3#reporte-titulo Enviar reporte mensual
+        p#reporte-mes-text(style="font-size:14px;color:var(--text-2);margin-top:8px;line-height:1.6")
+        label(for="reporte-email") Email del jefe
+        input#reporte-email(type="email", placeholder="jefe@empresa.com", required)
+        label(for="reporte-formato") Formato
+        select#reporte-formato
+          option(value="CSV") CSV
+          option(value="EXCEL") Excel
+        .modal-footer
+          button.btn(type="button", onclick="cerrarModal()") Cancelar
+          button.btn.btn-primary(type="button", onclick="enviarReporte()") Enviar
 
 
     //- MODAL: CONFIRMACIÓN GENÉRICA

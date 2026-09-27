@@ -14,7 +14,7 @@ async function api(path, options = {}) {
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ message: res.statusText }));
-    throw new Error(err.message || err.error || `Error ${res.status}`);
+    throw new Error(err.message || err.error || err.mensaje_ejecucion || `Error ${res.status}`);
   }
 
   if (res.status === 204) return null;
@@ -42,6 +42,11 @@ export const DB = {
 
   // --- Resumen ---
   getResumenMes: (mes) => api(`resumen/${mes}`),
+  getRegistrosReporteMes: (mes) => api(`reportes/registros/${mes}`),
+  enviarReporteMensual: (reporte) => api('reportes/mensual', {
+    method: 'POST',
+    body: JSON.stringify(reporte),
+  }),
   
   // --- Guardar Día ---
   guardarDia: (fecha, items) => api('guardar-dia', {

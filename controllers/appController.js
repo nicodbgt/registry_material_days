@@ -1,4 +1,5 @@
 import db from '../db/db.js';
+import { generateAndSendReport } from '../services/reportService.js';
 
 export const getModelos = async (req, res) => {
   try {
@@ -116,6 +117,15 @@ export const getResumenMes = async (req, res) => {
   }
 };
 
+export const getRegistrosReporteMes = async (req, res) => {
+  try {
+    const registros = await db.getRegistrosReporteMes(req.params.mes);
+    res.json(registros);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const guardarDia = async (req, res) => {
   const { fecha, items } = req.body;
   if (!fecha || !Array.isArray(items) || !items.length) {
@@ -135,4 +145,19 @@ export const guardarDia = async (req, res) => {
 
 export const renderIndex = (req, res) => {
   res.render('index');
+};
+
+export const generarReporte = async (req, res) => {
+  try {
+    const result = await generateAndSendReport(req.body);
+    res.json(result);
+  } catch (error) {
+    const status = /SMTP|plantilla|obligatorio|debe ser|válido|Cada/.test(error.message) ? 400 : 500;
+    res.status(status).json({
+      status: 'error',
+      archivos_generados: [],
+      email_enviado_a: req.body?.email_jefe || '',
+      mensaje_ejecucion: error.message,
+    });
+  }
 };
