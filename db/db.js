@@ -228,13 +228,14 @@ const db = {
     const hasta = `${mes}-${String(ultimoDia).padStart(2, '0')}`;
     const { data, error } = await supabase
       .from('dias_produccion')
-      .select('fecha, lineas_produccion(material, cantidad, peso_total)')
+      .select('fecha, lineas_produccion(codigo, material, cantidad, peso_total)')
       .gte('fecha', desde)
       .lte('fecha', hasta)
       .order('fecha', { ascending: true });
     if (error) throw new Error(error.message);
     return data.flatMap(dia => dia.lineas_produccion.map(linea => ({
       dia: Number(dia.fecha.slice(-2)),
+      codigo: linea.codigo,
       tipo: linea.material,
       cantidad: Number(linea.cantidad),
       peso_total: Number(linea.peso_total),

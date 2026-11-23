@@ -282,7 +282,8 @@ nav button.active {
   margin-bottom: 6px;
 }
 
-.modal input {
+.modal input,
+.modal select {
   width: 100%;
   padding: 12px;
   background-color: var(--bg-1);

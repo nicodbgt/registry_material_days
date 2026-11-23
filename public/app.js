@@ -426,11 +426,13 @@ window.enviarReporte = async () => {
     if (!registros.length) {
       throw new Error('El mes seleccionado no tiene registros para enviar.');
     }
+    const resumen = await DB.getResumenMes(state.currentMes);
     await DB.enviarReporteMensual({
       mes_reporte: formatMesLabel(state.currentMes),
       formato_salida: format,
       email_jefe: email,
       registros_diarios: registros,
+      resumen_reporte: resumen,
     });
     cerrarModal();
     showToast(`Reporte de ${formatMesLabel(state.currentMes)} enviado`);
